@@ -24,6 +24,7 @@
                         </li>
                         @endforeach
                     </ul>
+                    {{--
                     <hr>
                     <ul>
                         <li>
@@ -35,7 +36,7 @@
                                 <p>Total 25 GB telah digunakan</p>
                             </div>
                         </li>
-                    </ul>
+                    </ul> --}}
                 </div>
             </div>
         </div>
