@@ -24,19 +24,6 @@
                         </li>
                         @endforeach
                     </ul>
-                    {{--
-                    <hr>
-                    <ul>
-                        <li>
-                            <div class="m-t-15">
-                                <div class="progress sm-progress-bar mb-1">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 25%"
-                                        aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <p>Total 25 GB telah digunakan</p>
-                            </div>
-                        </li>
-                    </ul> --}}
                 </div>
             </div>
         </div>
