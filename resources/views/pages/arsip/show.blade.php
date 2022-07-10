@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Beranda')
+@section('title', 'Arsip')
 @section('title.category', 'General')
 
 @section('content')
@@ -11,13 +11,13 @@
                 <div class="card-body">
                     <ul>
                         <li>
-                            <a href="{{ route('dashboard.index') }}" class="btn btn-light">
+                            <a href="{{ route('arsip.index') }}" class="btn btn-light">
                                 Beranda
                             </a>
                         </li>
                         @foreach($kategori_arsip as $kategori)
                         <li>
-                            <a href="{{ route('dashboard.show', $kategori->id) }}"
+                            <a href="{{ route('arsip.show', $kategori->id) }}"
                                 class="btn @if($item->id == $kategori->id) btn-primary @else btn-light @endif">
                                 {{ $kategori->nama }}
                             </a>
@@ -33,7 +33,7 @@
             <div class="card">
                 <div class="card-header">
                     <div class="media">
-                        <form class="form-inline" action="{{ route('dashboard.show', $item->id) }}" method="get">
+                        <form class="form-inline" action="{{ route('arsip.show', $item->id) }}" method="get">
                             <div class="form-group mb-0">
                                 <i class="fa fa-search"></i>
                                 <input name="search" class="form-control-plaintext" type="text"
@@ -44,7 +44,7 @@
                         <div class="media-body text-end">
                             <a class="btn btn-primary" title="Tambah Berkas" data-bs-toggle="modal"
                                 data-bs-target="#modalContainer" data-title="Tambah Berkas"
-                                href="{{ route('dashboard.create') }}">
+                                href="{{ route('arsip.create') }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round" class="feather feather-upload">
@@ -70,7 +70,7 @@
                                 @if(\File::extension($item->file) == 'pdf') fa-file-pdf-o txt-secondary @endif
                                 @if(\File::extension($item->file) == 'doc' || \File::extension($item->file) == 'docx') fa-file-word-o txt-linkedin @endif
                                 "></i>
-                                <a href="{{ route('dashboard.download', $item->id) }}"><i
+                                <a href="{{ route('arsip.download', $item->id) }}"><i
                                         class="fa fa-download f-14 ellips"></i></a>
                             </div>
                             <div class="file-bottom">
