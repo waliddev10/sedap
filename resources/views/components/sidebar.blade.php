@@ -23,6 +23,12 @@
                             <span>Beranda</span>
                         </a>
                     </li>
+                    <li class="sidebar-list">
+                        <a class="sidebar-link sidebar-title link-nav active" href="{{ route('arsip.index') }}">
+                            <i data-feather="book"></i>
+                            <span>Arsip</span>
+                        </a>
+                    </li>
                     {{-- <li class="sidebar-list">
                         <a class="sidebar-link sidebar-title" href="javascript:void(0)">
                             <i data-feather="folder"></i>

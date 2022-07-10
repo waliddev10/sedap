@@ -54,16 +54,19 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::resource('/dashboard', DashboardController::class);
+    Route::resource('/dashboard', DashboardController::class)->only('index');
     Route::get('/dashboard/download/{arsip_id}', [DashboardController::class, 'download'])->name('dashboard.download');
+
+    Route::resource('/arsip', ArsipController::class);
+    Route::get('/arsip/download/{arsip_id}', [ArsipController::class, 'download'])->name('arsip.download');
 
     Route::get('/profil_pegawai', [KontakPegawaiController::class, 'index'])->name('profil_pegawai.index');
 
-    Route::get('/kalender_penugasan', [KalenderPenugasanController::class, 'index'])->name('kalender_penugasan.index');
+    // Route::get('/kalender_penugasan', [KalenderPenugasanController::class, 'index'])->name('kalender_penugasan.index');
 
-    Route::get('/arsip', [ArsipController::class, 'index'])->name('arsip.index');
+    // Route::get('/arsip', [ArsipController::class, 'index'])->name('arsip.index');
 
-    Route::get('/riwayat_penugasan', [RiwayatPenugasanController::class, 'index'])->name('riwayat_penugasan.index');
+    // Route::get('/riwayat_penugasan', [RiwayatPenugasanController::class, 'index'])->name('riwayat_penugasan.index');
 
     Route::resource('/user', UserController::class)->middleware('role:admin')->except('show');
 

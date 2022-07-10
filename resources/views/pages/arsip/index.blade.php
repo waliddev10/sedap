@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Arsip Penugasan')
+@section('title', 'Arsip')
 @section('title.category', 'General')
 
 @section('content')
@@ -11,36 +11,19 @@
                 <div class="card-body">
                     <ul>
                         <li>
-                            <div class="btn btn-primary">
+                            <a href="{{ route('arsip.index') }}" class="btn btn-primary">
                                 Beranda
-                            </div>
+                            </a>
                         </li>
+                        @foreach($kategori_arsip as $kategori)
                         <li>
-                            <div class="btn btn-light">
-                                Telaahan Staf
-                            </div>
+                            <a href="{{ route('arsip.show', $kategori->id) }}" class="btn btn-light">
+                                {{ $kategori->nama }}
+                            </a>
                         </li>
-                        <li>
-                            <div class="btn btn-light">
-                                Surat Perintah Tugas
-                            </div>
-                        </li>
-                        <li>
-                            <div class="btn btn-light">
-                                Daftar Absensi
-                            </div>
-                        </li>
-                        <li>
-                            <div class="btn btn-light">
-                                Laporan Hasil
-                            </div>
-                        </li>
-                        <li>
-                            <div class="btn btn-light">
-                                Cost Sheet
-                            </div>
-                        </li>
+                        @endforeach
                     </ul>
+                    {{--
                     <hr>
                     <ul>
                         <li>
@@ -52,7 +35,7 @@
                                 <p>Total 25 GB telah digunakan</p>
                             </div>
                         </li>
-                    </ul>
+                    </ul> --}}
                 </div>
             </div>
         </div>
@@ -62,44 +45,54 @@
             <div class="card">
                 <div class="card-header">
                     <div class="media">
-                        <form class="form-inline" action="#" method="get">
+                        <form class="form-inline" action="{{ route('arsip.index') }}" method="get">
                             <div class="form-group mb-0">
                                 <i class="fa fa-search"></i>
-                                <input class="form-control-plaintext" type="text" placeholder="Cari berkas di sini..."
-                                    data-bs-original-title="" title="">
+                                <input name="search" class="form-control-plaintext" type="text"
+                                    placeholder="Cari tahun atau judul..." value="{{ request()->search }}">
                             </div>
                             <button type="submit" class="btn btn-primary">Cari</button>
                         </form>
                         <div class="media-body text-end">
-                            <form class="d-inline-flex" action="#" method="POST" enctype="multipart/form-data"
-                                name="myForm">
-                                <div class="btn btn-primary" onclick="getFile()">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" class="feather feather-upload">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="17 8 12 3 7 8"></polyline>
-                                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                                    </svg>
-                                    Unggah Berkas
-                                </div>
-                            </form>
+                            <a class="btn btn-primary" title="Tambah Berkas" data-bs-toggle="modal"
+                                data-bs-target="#modalContainer" data-title="Tambah Berkas"
+                                href="{{ route('arsip.create') }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="feather feather-upload">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                Unggah Berkas
+                            </a>
                         </div>
                     </div>
                 </div>
                 <div class="card-body file-manager">
                     <h4 class="mb-3">Semua Berkas</h4>
-                    <h6>Terakhir unggah</h6>
+                    <h6>{{ request()->search ? 'Pencarian atas "' . request()->search . '"' : 'Terakhir unggah' }}</h6>
                     <ul class="files">
+                        @foreach($arsip as $item)
                         <li class="file-box">
-                            <div class="file-top"> <i class="fa fa-file-image-o txt-primary"></i><i
-                                    class="fa fa-ellipsis-v f-14 ellips"></i></div>
+                            <div class="file-top">
+                                <i class="fa
+                                @if(\File::extension($item->file) == 'jpg' || \File::extension($item->file) == 'jpeg' || \File::extension($item->file) == 'png') fa-file-image-o txt-success @endif
+                                @if(\File::extension($item->file) == 'xlsx' || \File::extension($item->file) == 'xls') fa-file-excel-o txt-success @endif
+                                @if(\File::extension($item->file) == 'pdf') fa-file-pdf-o txt-secondary @endif
+                                @if(\File::extension($item->file) == 'doc' || \File::extension($item->file) == 'docx') fa-file-word-o txt-linkedin @endif
+                                "></i>
+                                <a href="{{ route('arsip.download', $item->id) }}"><i
+                                        class="fa fa-download f-14 ellips"></i></a>
+                            </div>
                             <div class="file-bottom">
-                                <h6>Logo.psd </h6>
-                                <p class="mb-1">2.0 MB</p>
+                                <h6>{{ $item->nama }}</h6>
+                                <p class="mb-1">{{ $item->file }} • <i>{{ $item->tgl_berkas
+                                        }}</i></p>
                             </div>
                         </li>
-                        <li class="file-box">
+                        @endforeach
+                        {{-- <li class="file-box">
                             <div class="file-top"> <i class="fa fa-file-archive-o txt-secondary"></i><i
                                     class="fa fa-ellipsis-v f-14 ellips"></i></div>
                             <div class="file-bottom">
@@ -122,9 +115,23 @@
                                 <h6>requirements.txt </h6>
                                 <p class="mb-1">0.90 KB</p>
                             </div>
-                        </li>
+                        </li> --}}
                     </ul>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalContainer" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog"
+    aria-labelledby="modalContainer" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Title</h5>
+                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body ">
+                ...
             </div>
         </div>
     </div>

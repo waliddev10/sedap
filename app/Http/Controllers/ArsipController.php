@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Arsip;
 use App\Models\Bidang;
+use App\Models\KategoriArsip;
 use App\Models\Pangkat;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Yajra\DataTables\DataTables;
 
@@ -21,7 +24,41 @@ class ArsipController extends Controller
      */
     public function index(Request $request)
     {
-        return view('pages.arsip.index');
+        $kategori_arsip = KategoriArsip::all();
+        $arsip = Arsip::with('user')
+            ->orderBy('created_at', 'desc')
+            ->when($request->search, function ($query) use ($request) {
+                return $query->where('nama', 'like', '%' . $request->search . '%')
+                    ->orWhere('tgl_berkas', 'like', '%' . $request->search . '%')
+                    ->orWhere('file', 'like', '%' . $request->search . '%');
+            })
+            ->get();
+        return view('pages.arsip.index', compact('kategori_arsip', 'arsip'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Request $request, $kategori_arsip_id)
+    {
+        return view(
+            'pages.arsip.show',
+            [
+                'kategori_arsip' => KategoriArsip::all(),
+                'item' => KategoriArsip::findOrFail($kategori_arsip_id),
+                'arsip' => Arsip::with('user')
+                    ->where('kategori_arsip_id', $kategori_arsip_id)
+                    ->when($request->search, function ($query) use ($request) {
+                        return $query->where('nama', 'like', '%' . $request->search . '%')
+                            ->orWhere('tgl_berkas', 'like', '%' . $request->search . '%')
+                            ->orWhere('file', 'like', '%' . $request->search . '%');
+                    })
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+            ]
+        );
     }
 
     /**
@@ -32,10 +69,9 @@ class ArsipController extends Controller
     public function create()
     {
         return view(
-            'pages.data_master.user.create',
+            'pages.arsip.create',
             [
-                'bidang' => Bidang::all(),
-                'pangkat' => Pangkat::all(),
+                'kategori_arsip' => KategoriArsip::all(),
             ]
         );
     }
@@ -49,33 +85,36 @@ class ArsipController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'nama' => 'required|string',
-            'email' => 'required|email',
-            'nip' => 'required|string',
-            'jabatan' => 'required|string',
-            'pangkat_id' => 'required',
-            'bidang_id' => 'required',
-            'no_hp' => 'required',
-            'password' => 'required|string',
-            'role' => 'required|in:admin,user',
+            'kategori_arsip_id' => 'required',
+            'nama' => 'required',
+            'keterangan' => 'required',
+            'tgl_berkas' => 'required',
+            'file' => 'required|file',
         ]);
 
-        User::create([
-            'nama' => $request->nama,
-            'email' => $request->email,
-            'nip' => $request->nip,
-            'jabatan' => $request->jabatan,
-            'pangkat_id' => $request->pangkat_id,
-            'bidang_id' => $request->bidang_id,
-            'no_hp' => $request->no_hp,
-            'email_verified_at' => Carbon::now()->format('Y-m-d'),
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-        ]);
+        $time = time();
+
+        $file = $request->file('file');
+
+        $dir = storage_path('app/arsip/' . $request->kategori_arsip_id);
+        $fileName = $time . '_' . $file->getClientOriginalName();
+        $moveFile = $file->move($dir, $fileName);
+
+        if ($moveFile) {
+            Arsip::create([
+                'user_id' => Auth::user()->id,
+                'kategori_arsip_id' => $request->kategori_arsip_id,
+                'nama' => $request->nama,
+                'keterangan' => $request->keterangan,
+                'tgl_berkas' => Carbon::parse($request->tgl_berkas)->format('Y-m-d'),
+                'kode_unik' => $time,
+                'file' => $file->getClientOriginalName(),
+            ]);
+        }
 
         return response()->json([
             'status' => 'success',
-            'message' => 'User berhasil ditambah.',
+            'message' => 'Arsip berhasil ditambah.',
         ], Response::HTTP_CREATED);
     }
 
@@ -150,5 +189,16 @@ class ArsipController extends Controller
             'status' => 'success',
             'message' => 'User berhasil dihapus.'
         ], Response::HTTP_ACCEPTED);
+    }
+
+    public function download($arsip_id)
+    {
+        $arsip = Arsip::findOrFail($arsip_id);
+
+        $dir = storage_path('app/arsip/' . $arsip->kategori_arsip_id);
+
+        $file = $dir . '/' . $arsip->kode_unik . '_' . $arsip->file;
+
+        return response()->download($file, $arsip->file);
     }
 }
